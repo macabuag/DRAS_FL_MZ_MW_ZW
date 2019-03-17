@@ -72,7 +72,7 @@ fullPath <- list.files(iFile$ExpFolder, recursive = T, include.dirs=F)
 
   ## Omit Specified Folders and Files ##
 fullPath <- fullPath[!word(fullPath, sep = "/", start = 1) %in% iFile$IgnoreFolder] #ignore specified folders
-#fullPath <- fullPath[!word(fullPath, sep = "\\.", start = -1) %in% shapeFile$omit] #ignore specified file extensions
+fullPath <- fullPath[!word(fullPath, sep = "\\.", start = -1) %in% shapeFile$omit] #ignore specified file extensions
 
 
   ## Extract File Info ##
@@ -123,15 +123,17 @@ DataSchedule[,(colHeaders):=NA] #initialize all of the additional user-defined h
 
   ## Arrange in Final Format ##
 View(DataSchedule)
-a <- DataSchedule[,.(FileName=fileName, Checked=NA, `Key Source`=NA, `Document Type`=NA, Description=NA,
+a <- DataSchedule[,.(FileName=fileName, Checked=NA, `Key Source`=NA, `Document Type`=NA_character_, Description=NA,
                      HeadFolder=headFolder,`HeadFolder Description`=NA,
                      SubFolder=subFolder, `SubFolder Description`=NA,
                      FileSize_byte=fileSize_byte, FullPath=fullPath, Extension=extension, 
                      MachineReadable=machineReadable, ShapeFile=shapeFile)]
 a[,(colHeaders):=NA]
 
-#ToDo: Set Document Type to Shapefile for shapefiles (also do if any relevant files within zipped folder)
-#ToDo: Set Document Type to Spreadsheet for .xls, .xlsx, .xlsm, .csv (also do if any relevant files within zipped folder)
+#ToDo: Define these lists and DocumentTypes in the beginning under 'User Inputs'
+a[Extension %in% shapeFile$extension, `Document Type`:="ShapeFile"]
+a[Extension %in% c("xls", "xlsx", "xlsm", "csv"), `Document Type`:="Spreadsheet"]
+a[Extension %in% c("mdb", "accdb", "accde"), `Document Type`:="Database"]
 
 
 DataSchedule <- a ; rm(a)
