@@ -120,9 +120,9 @@ DataSchedule <- a ; rm(a)
 dir.create(path = "outputs")
 dir.create(path =  file.path("outputs", oFile$folder$R))
 fwrite(DataSchedule, file = file.path("outputs", oFile$folder$R, 
-                                      oFile$filename, ".csv"))
+                                      paste0(oFile$filename, ".csv")))
 fwrite(DataSchedule, file = file.path(oFile$folder$spreadsheet,
-                                      oFile$filename, ".csv"))
+                                      paste0(oFile$filename, ".csv")))
 
 
 ## 4.0 Tidy Up --------------------------------------------------------
