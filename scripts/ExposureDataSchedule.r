@@ -18,8 +18,9 @@ iFile <- list()
 iFile$ExpFolder <- file.path("..", "..", "..", "Mozambique Ph2") #location of the files to be summarized
 iFile$IgnoreFolder <- c("") #folders NOT to include in the schedule
 
-oFolder <- list()
-oFolder$spreadsheet <- file.path("..","Spreadsheets", "File Summary") #output location (same as summary spreadsheet location)
+oFile <- list()
+oFile$filename <- "ExposureDataSchedule_MZ"
+oFile$folder$spreadsheet <- file.path("..","Spreadsheets", "File Summary") #output location (same as summary spreadsheet location)
 
   ## User Inputs ##
 machineReadable_list <- list()
@@ -44,7 +45,7 @@ colHeaders <- c("Geometry Type", "Spatial Extent", "Spatial Resolution",
                 "Additional Notes")
 
   ## Create Output Files ##
-oFolder$R <- paste0(gsub("[[:punct:]]", " ", Sys.time()), "-ExpDat")  #create a unique folder with the run date
+oFile$folder$R <- paste0(gsub("[[:punct:]]", " ", Sys.time()), "-ExpDat")  #create a unique folder with the run date
 
   ## Packages ##
 if(!require("data.table")) {
@@ -93,7 +94,8 @@ rm(fileName, headFolder, subFolder, fileSize, fullPath, extension)
 
 DataSchedule$machineReadable <- "NA"
 DataSchedule[extension %in% machineReadable_list$yes]$machineReadable <- "yes"
-#To Do: see if files within zip folder are machine readable
+#ToDo: see if files within zip folder are machine readable
+#ToDo: highlight zipped folders with shapefiles NOT in the root folder (if un sub folders within the zipped folder then they won't be read by QGIS)
 DataSchedule[extension %in% machineReadable_list$no]$machineReadable <- "no"
 
 #DataSchedule[,ShapeFile:="no"]
@@ -115,9 +117,12 @@ DataSchedule <- a ; rm(a)
 
 
 ## 3.0 Write Output ---------------------------------------------------
-dir.create( file.path("outputs", oFolder$R))
-fwrite(DataSchedule, file = file.path("outputs", oFolder$R, "ExposureDataSchedule.csv"))
-fwrite(DataSchedule, file = file.path(oFolder$spreadsheet, "ExposureDataSchedule.csv"))
+dir.create(path = "outputs")
+dir.create(path =  file.path("outputs", oFile$folder$R))
+fwrite(DataSchedule, file = file.path("outputs", oFile$folder$R, 
+                                      oFile$filename, ".csv"))
+fwrite(DataSchedule, file = file.path(oFile$folder$spreadsheet,
+                                      oFile$filename, ".csv"))
 
 
 ## 4.0 Tidy Up --------------------------------------------------------
