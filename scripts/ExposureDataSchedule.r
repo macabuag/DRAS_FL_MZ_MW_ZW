@@ -23,17 +23,19 @@ oFile$filename <- "ExposureDataSchedule_MZ"
 oFile$folder$spreadsheet <- file.path("..","Spreadsheets", "File Summary") #output location (same as summary spreadsheet location)
 
   ## User Inputs ##
+shapeFile <- list()
+shapeFile$extension <- c("cpg","dbf", "prj", "sbn", "sbx", "shp", "shx", "qpj","lpk", "pitem",
+                         "gpkg")
+shapeFile$omit <- c("cpg","dbf", "prj", "sbn", "sbx", "shx")
+
+
 machineReadable_list <- list()
-machineReadable_list$yes <- c("txt", "README", "mdb", "xlsx", "xls", "xlsm", "csv",
-                         "cpg", "dbf", "prj", "sbn", "sbx", "shp", "shx", "qpj", "lpk", "pitem", 
-                         "html", "lyr", "json")
+machineReadable_list$yes <- c(shapeFile$extension, "txt", "README", "mdb", "xlsx", "xls", "xlsm", "csv",
+                              "html", "lyr", "json")
 
 machineReadable_list$no <- c("pdf",  "PDF", "zip", "7z", "png", "avi", "wmv", "mpg", "sd",
-                        "gif", "jpg", "doc")
+                             "gif", "jpg", "doc")
 
-shapeFile <- list()
-shapeFile$extension <- c("cpg","dbf", "prj", "sbn", "sbx", "shp", "shx", "qpj","lpk", "pitem")
-shapeFile$omit <- c("cpg","dbf", "prj", "sbn", "sbx", "shx")
 
 colHeaders <- c("Geometry Type", "Spatial Extent", "Spatial Resolution",
                 "Exposure Disaggregation", "Building Typology Distribution", "Asset Value Determination",
@@ -112,6 +114,8 @@ a <- DataSchedule[,.(FileName=fileName, Checked=NA, `Key Source`=NA, `Document T
                      MachineReadable=machineReadable, MachineReadable_manual=NA,
                      ShapeFile=shapeFile)]
 a[,(colHeaders):=NA]
+
+#ToDo: Set Document Type to Shapefile for shapefiles
 
 DataSchedule <- a ; rm(a)
 
