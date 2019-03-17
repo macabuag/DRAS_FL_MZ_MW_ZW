@@ -15,17 +15,18 @@ time$start <- Sys.time()
 
   ## General Input Files ##
 iFile <- list()
-iFile$ExpFolder <- file.path("..", "..", "..", "Mozambique Ph2") #location of the files to be summarized
+#iFile$ExpFolder <- file.path("..", "..", "..", "Mozambique Ph2") #location of the files to be summarized
+iFile$ExpFolder <- file.path("..", "..", "..", "Malawi Ph2") #location of the files to be summarized
 iFile$IgnoreFolder <- c("") #folders NOT to include in the schedule
 
 oFile <- list()
-oFile$filename <- "ExposureDataSchedule_MZ"
+oFile$filename <- "ExposureDataSchedule_MW"
 oFile$folder$spreadsheet <- file.path("..","Spreadsheets", "File Summary") #output location (same as summary spreadsheet location)
 
   ## User Inputs ##
 shapeFile <- list()
 shapeFile$extension <- c("cpg","dbf", "prj", "sbn", "sbx", "shp", "shx", "qpj","lpk", "pitem",
-                         "gpkg")
+                         "gpkg", "kmz", "kml", "gdb")
 shapeFile$omit <- c("cpg","dbf", "prj", "sbn", "sbx", "shx")
 
 
@@ -44,7 +45,7 @@ colHeaders <- c("Geometry Type", "Spatial Extent", "Spatial Resolution",
                 "Social and institutional impacts","Service delivery impacts","Economic recovery",
                 "Occupancy Coverage", "Typology Data", "Structural Condition Data",
                 "Completeness_Coverage", "Age of Dataset", "Time Coverage", "Data Source", "Uncertainties", "Reliability",
-                "Additional Notes")
+                "Additional Notes") #NOTE there are more column headings defined at the end of section 2
 
   ## Create Output Files ##
 oFile$folder$R <- paste0(gsub("[[:punct:]]", " ", Sys.time()), "-ExpDat")  #create a unique folder with the run date
@@ -66,7 +67,7 @@ if(!require("stringr")){
 
 
 ## 2.0 Read Folder -----------------------------------------------
-#ToDo: deal with spanish characters (UTC-8)
+#ToDo: deal with spanish characters (UTF-8)
 fullPath <- list.files(iFile$ExpFolder, recursive = T, include.dirs=F)
 
   ## Omit Specified Folders and Files ##
@@ -96,7 +97,10 @@ rm(fileName, headFolder, subFolder, fileSize, fullPath, extension)
 
 DataSchedule$machineReadable <- "NA"
 DataSchedule[extension %in% machineReadable_list$yes]$machineReadable <- "yes"
+
+
 #ToDo: see if files within zip folder are machine readable
+#ToDo: see if files within zip folder are shapefiles
 #ToDo: highlight zipped folders with shapefiles NOT in the root folder (if un sub folders within the zipped folder then they won't be read by QGIS)
 DataSchedule[extension %in% machineReadable_list$no]$machineReadable <- "no"
 
@@ -109,24 +113,27 @@ DataSchedule[,(colHeaders):=NA]
   ## Arrange in Final Format ##
 View(DataSchedule)
 a <- DataSchedule[,.(FileName=fileName, Checked=NA, `Key Source`=NA, `Document Type`=NA, Description=NA,
-                     HeadFolder=headFolder, SubFolder=subFolder, FileSize_byte=fileSize_byte,
-                     FullPath=fullPath, Extension=extension, 
+                     HeadFolder=headFolder,`HeadFolder Description`=NA,
+                     SubFolder=subFolder, `SubFolder Description`=NA,
+                     FileSize_byte=fileSize_byte, FullPath=fullPath, Extension=extension, 
                      MachineReadable=machineReadable, MachineReadable_manual=NA,
                      ShapeFile=shapeFile)]
 a[,(colHeaders):=NA]
 
-#ToDo: Set Document Type to Shapefile for shapefiles
+#ToDo: Set Document Type to Shapefile for shapefiles (also do if any relevant files within zipped folder)
+#ToDo: Set Document Type to Spreadsheet for .xls, .xlsx, .xlsm, .csv (also do if any relevant files within zipped folder)
+
 
 DataSchedule <- a ; rm(a)
 
 
 ## 3.0 Write Output ---------------------------------------------------
 dir.create(path = "outputs")
-dir.create(path =  file.path("outputs", oFile$folder$R))
-fwrite(DataSchedule, file = file.path("outputs", oFile$folder$R, 
-                                      paste0(oFile$filename, ".csv")))
-fwrite(DataSchedule, file = file.path(oFile$folder$spreadsheet,
-                                      paste0(oFile$filename, ".csv")))
+# dir.create(path =  file.path("outputs", oFile$folder$R))
+# fwrite(DataSchedule, file = file.path("outputs", oFile$folder$R, 
+#                                       paste0(oFile$filename, ".csv")))
+# fwrite(DataSchedule, file = file.path(oFile$folder$spreadsheet,
+#                                       paste0(oFile$filename, ".csv")))
 
 
 ## 4.0 Tidy Up --------------------------------------------------------
