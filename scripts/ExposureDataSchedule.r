@@ -79,7 +79,7 @@ fullPath <- fullPath[!word(fullPath, sep = "/", start = 1) %in% iFile$IgnoreFold
 fileName <- word(fullPath, sep = "/", start = -1)
 
 headFolder <- word(fullPath, sep = "/", start = 1)  
-headFolder[grepl(pattern = "\\.", x = headFolder)] <- NA
+headFolder[grepl(pattern = "\\.", x = headFolder)] <- NA #word returns '.' if no headFolders. Replace this with NA
 
 subFolder <- word(fullPath, sep = "/", start = 2)
 subFolder[grepl(pattern = "\\.", x = subFolder)] <- NA
@@ -92,23 +92,34 @@ extension <- word(fileName, sep="\\.", start = -1)
   ## Collate as Table ##
 DataSchedule <- data.table(fileName, headFolder, subFolder, 
                            fileSize_byte=fileSize, extension, fullPath)
-rm(fileName, headFolder, subFolder, fileSize, fullPath, extension)
+#rm(fileName, headFolder, subFolder, fileSize, fullPath, extension)
 
 
-DataSchedule$machineReadable <- "NA"
-DataSchedule[extension %in% machineReadable_list$yes]$machineReadable <- "yes"
+#DataSchedule$machineReadable <- "NA"
+DataSchedule[extension %in% machineReadable_list$yes, machineReadable:="yes"]
+DataSchedule[extension %in% machineReadable_list$no, machineReadable:= "no"]
 
-
-#ToDo: see if files within zip folder are machine readable
-#ToDo: see if files within zip folder are shapefiles
-#ToDo: highlight zipped folders with shapefiles NOT in the root folder (if un sub folders within the zipped folder then they won't be read by QGIS)
-DataSchedule[extension %in% machineReadable_list$no]$machineReadable <- "no"
-
-#DataSchedule[,ShapeFile:="no"]
 DataSchedule[extension %in% shapeFile$extension, shapeFile:="yes"]
 
+#ToDo: highlight zipped folders with shapefiles NOT in the root folder (if un sub folders within the zipped folder then they won't be read by QGIS)
 
-DataSchedule[,(colHeaders):=NA]
+zipped_contains <- function(zipFile, yesList, noList=NA) {
+  a <- unzip(zipfile = zipFile, list = T) #list of all files in zip folder
+  b <- word(string = a$Name, sep = "\\.", start = -1) #all file extensions
+  
+  c <- b %in% yesList
+  if(any(c)) return("yes")
+} #return "yes" if ANY files extensions within the zipped folder are on the yesList
+# zipped_contains(file.path(iFile$ExpFolder, "Malawi-RiskProfile.zip"), machineReadable_list$yes)
+DataSchedule[extension == "zip"]$machineReadable <- 
+  sapply(X = file.path(iFile$ExpFolder,DataSchedule[extension == "zip"]$fullPath),
+         FUN = zipped_contains, yesList=machineReadable_list$yes) #for each zipped folder check if it contains a machinereadable file
+
+DataSchedule[extension == "zip"]$shapeFile <- 
+  sapply(X = file.path(iFile$ExpFolder,DataSchedule[extension == "zip"]$fullPath),
+         FUN = zipped_contains, yesList=shapeFile$extension) #for each zipped folder check if it contains a GIS file
+
+DataSchedule[,(colHeaders):=NA] #initialize all of the additional user-defined headings
 
   ## Arrange in Final Format ##
 View(DataSchedule)
@@ -116,8 +127,7 @@ a <- DataSchedule[,.(FileName=fileName, Checked=NA, `Key Source`=NA, `Document T
                      HeadFolder=headFolder,`HeadFolder Description`=NA,
                      SubFolder=subFolder, `SubFolder Description`=NA,
                      FileSize_byte=fileSize_byte, FullPath=fullPath, Extension=extension, 
-                     MachineReadable=machineReadable, MachineReadable_manual=NA,
-                     ShapeFile=shapeFile)]
+                     MachineReadable=machineReadable, ShapeFile=shapeFile)]
 a[,(colHeaders):=NA]
 
 #ToDo: Set Document Type to Shapefile for shapefiles (also do if any relevant files within zipped folder)
@@ -129,11 +139,11 @@ DataSchedule <- a ; rm(a)
 
 ## 3.0 Write Output ---------------------------------------------------
 dir.create(path = "outputs")
-# dir.create(path =  file.path("outputs", oFile$folder$R))
-# fwrite(DataSchedule, file = file.path("outputs", oFile$folder$R, 
-#                                       paste0(oFile$filename, ".csv")))
-# fwrite(DataSchedule, file = file.path(oFile$folder$spreadsheet,
-#                                       paste0(oFile$filename, ".csv")))
+dir.create(path =  file.path("outputs", oFile$folder$R))
+fwrite(DataSchedule, file = file.path("outputs", oFile$folder$R,
+                                      paste0(oFile$filename, ".csv")))
+fwrite(DataSchedule, file = file.path(oFile$folder$spreadsheet,
+                                      paste0(oFile$filename, ".csv")))
 
 
 ## 4.0 Tidy Up --------------------------------------------------------
