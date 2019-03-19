@@ -16,11 +16,12 @@ time$start <- Sys.time()
   ## General Input Files ##
 iFile <- list()
 #iFile$ExpFolder <- file.path("..", "..", "..", "Mozambique Ph2") #location of the files to be summarized
-iFile$ExpFolder <- file.path("..", "..", "..", "Malawi Ph2") #location of the files to be summarized
+#iFile$ExpFolder <- file.path("..", "..", "..", "Malawi Ph2") #location of the files to be summarized
+iFile$ExpFolder <- file.path("..", "..", "1-Data", "DRAS 2017 MOZ Exposure Analysis") #location of the files to be summarized
 iFile$IgnoreFolder <- c("") #folders NOT to include in the schedule
 
 oFile <- list()
-oFile$filename <- "ExposureDataSchedule_MW"
+oFile$filename <- "ExposureDataSchedule_DRAS2017MOZ"
 oFile$folder$spreadsheet <- file.path("..","Spreadsheets", "File Summary") #output location (same as summary spreadsheet location)
 
   ## User Inputs ##
@@ -84,6 +85,12 @@ headFolder[grepl(pattern = "\\.", x = headFolder)] <- NA #word returns '.' if no
 subFolder <- word(fullPath, sep = "/", start = 2)
 subFolder[grepl(pattern = "\\.", x = subFolder)] <- NA
 
+subFolder2 <- word(fullPath, sep = "/", start = 2)
+subFolder2[grepl(pattern = "\\.", x = subFolder2)] <- NA
+
+subFolder3 <- word(fullPath, sep = "/", start = 2)
+subFolder3[grepl(pattern = "\\.", x = subFolder3)] <- NA
+
 fileSize <- file.size(file.path(iFile$ExpFolder, fullPath))
 
 extension <- word(fileName, sep="\\.", start = -1)
@@ -92,7 +99,7 @@ extension <- word(fileName, sep="\\.", start = -1)
   ## Collate as Table ##
 DataSchedule <- data.table(fileName, headFolder, subFolder, 
                            fileSize_byte=fileSize, extension, fullPath)
-#rm(fileName, headFolder, subFolder, fileSize, fullPath, extension)
+rm(fileName, headFolder, subFolder, fileSize, fullPath, extension)
 
 
 #DataSchedule$machineReadable <- "NA"
@@ -101,7 +108,7 @@ DataSchedule[extension %in% machineReadable_list$no, machineReadable:= "no"]
 
 DataSchedule[extension %in% shapeFile$extension, shapeFile:="yes"]
 
-#ToDo: highlight zipped folders with shapefiles NOT in the root folder (if un sub folders within the zipped folder then they won't be read by QGIS)
+#ToDo: highlight zipped folders with shapefiles NOT in the root folder (if in sub folders within the zipped folder then they won't be read by QGIS)
 
 zipped_contains <- function(zipFile, yesList, noList=NA) {
   a <- unzip(zipfile = zipFile, list = T) #list of all files in zip folder
@@ -126,6 +133,8 @@ View(DataSchedule)
 a <- DataSchedule[,.(FileName=fileName, Checked=NA, `Key Source`=NA, `Document Type`=NA_character_, Description=NA,
                      HeadFolder=headFolder,`HeadFolder Description`=NA,
                      SubFolder=subFolder, `SubFolder Description`=NA,
+                     SubFolder2=subFolder2, `SubFolder2 Description`=NA,
+                     SubFolder3=subFolder, `SubFolder3 Description`=NA,
                      FileSize_byte=fileSize_byte, FullPath=fullPath, Extension=extension, 
                      MachineReadable=machineReadable, ShapeFile=shapeFile)]
 a[,(colHeaders):=NA]
