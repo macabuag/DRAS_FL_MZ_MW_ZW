@@ -16,12 +16,15 @@ time$start <- Sys.time()
   ## General Input Files ##
 iFile <- list()
 #iFile$ExpFolder <- file.path("..", "..", "..", "Mozambique Ph2") #location of the files to be summarized
-#iFile$ExpFolder <- file.path("..", "..", "..", "Malawi Ph2") #location of the files to be summarized
-iFile$ExpFolder <- file.path("..", "..", "1-Data", "DRAS 2017 MOZ Exposure Analysis") #location of the files to be summarized
-iFile$IgnoreFolder <- c("") #folders NOT to include in the schedule
+#iFile$ExpFolder <- file.path("..", "..", "..", "Malawi Ph2")
+#iFile$ExpFolder <- file.path("..", "..", "1-Data", "DRAS 2017 MOZ Exposure Analysis")
+#iFile$ExpFolder <- file.path("..", "..", "..")
+iFile$ExpFolder <- file.path("..", "..", "..", "Exposure Data")
+
+iFile$IgnoreFolder <- c("Malawi", "Zimbabwe") #folders NOT to include in the schedule
 
 oFile <- list()
-oFile$filename <- "ExposureDataSchedule_DRAS2017MOZ"
+oFile$filename <- "ExposureDataSchedule_MZ"
 oFile$folder$spreadsheet <- file.path("..","Spreadsheets", "File Summary") #output location (same as summary spreadsheet location)
 
   ## User Inputs ##
@@ -85,10 +88,10 @@ headFolder[grepl(pattern = "\\.", x = headFolder)] <- NA #word returns '.' if no
 subFolder <- word(fullPath, sep = "/", start = 2)
 subFolder[grepl(pattern = "\\.", x = subFolder)] <- NA
 
-subFolder2 <- word(fullPath, sep = "/", start = 2)
+subFolder2 <- word(fullPath, sep = "/", start = 3)
 subFolder2[grepl(pattern = "\\.", x = subFolder2)] <- NA
 
-subFolder3 <- word(fullPath, sep = "/", start = 2)
+subFolder3 <- word(fullPath, sep = "/", start = 4)
 subFolder3[grepl(pattern = "\\.", x = subFolder3)] <- NA
 
 fileSize <- file.size(file.path(iFile$ExpFolder, fullPath))
@@ -112,6 +115,7 @@ DataSchedule[extension %in% shapeFile$extension, shapeFile:="yes"]
 
 zipped_contains <- function(zipFile, yesList, noList=NA) {
   a <- unzip(zipfile = zipFile, list = T) #list of all files in zip folder
+  #To Do: embedd the above line in a tyrCatch() to handle corrupt zipped folders
   b <- word(string = a$Name, sep = "\\.", start = -1) #all file extensions
   
   c <- b %in% yesList
@@ -143,6 +147,8 @@ a[,(colHeaders):=NA]
 a[Extension %in% shapeFile$extension, `Document Type`:="ShapeFile"]
 a[Extension %in% c("xls", "xlsx", "xlsm", "csv"), `Document Type`:="Spreadsheet"]
 a[Extension %in% c("mdb", "accdb", "accde"), `Document Type`:="Database"]
+
+#ToDo: set Document Type for zipped folders if all (or majority) of contained files are of the speficied type.
 
 
 DataSchedule <- a ; rm(a)
